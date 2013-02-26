@@ -355,7 +355,7 @@ const errorHTML = `<!DOCTYPE html>
 
 <p class="lead">
 I'm unable to decode the VIN number provided. If you think the VIN is valid, please
-submit a bug report here.
+<a href="https://github.com/g13n/vindecodr/issues" rel="nofollow">submit a bug report here</a>.
 </p>
 
 <footer>

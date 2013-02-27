@@ -57,7 +57,8 @@ const vinFormTemplate = `<!DOCTYPE html>
 </form>
 
 <footer>
-<p class="muted text-center">Disclaimer: Use at your own risk.  No data is stored.</p>
+<p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
+<p class="muted text-center">Disclaimer: Use at your own risk. However, no information is stored except for logging.</p>
 </footer>
 </body>
 </html>
@@ -332,7 +333,8 @@ const outputHTML = `<!DOCTYPE html>
 </dl>
 
 <footer>
-<p class="muted text-center">Disclaimer: Use at your own risk.  No data is stored.</p>
+<p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
+<p class="muted text-center">Disclaimer: Use at your own risk.  However, no information is stored except for logging.</p>
 </footer>
 </body>
 </html>
@@ -359,7 +361,8 @@ I'm unable to decode the VIN number provided. If you think the VIN is valid, ple
 </p>
 
 <footer>
-<p class="muted text-center">Disclaimer: Use at your own risk.  No data is stored.</p>
+<p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
+<p class="muted text-center">Disclaimer: Use at your own risk.  However, no information is stored except for logging.</p>
 </footer>
 </body>
 </html>

@@ -19,7 +19,7 @@ func init() {
 
 func displayTemplate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
-	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache")))
+	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": false}))
 }
 
 func getTemplatePath(template string) string {
@@ -174,8 +174,9 @@ var YearMap = map[string]int {
 }
 
 func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
-	vin := r.FormValue("vin")
-	v := Vehicle{VIN: vin, Type: r.FormValue("type")}
+	vin   := r.FormValue("vin")
+	vtype := r.FormValue("type")
+	v := Vehicle{VIN: vin, Type: vtype}
 	// lower(HTTP_X_REQUEST_WITH) == "xmlhttprequest"
 
 	re, err := regexp.Compile(`(\d)([A-Z]{2})(\d)([A-Z]{2})([A-Z0-9])([1-6A-K])([0-9X])(.)([ABCDEK])(.*)`)
@@ -216,11 +217,7 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 			}
 			v.Serial    = matches[10]
 		} else {
-			err = errorTemplate.Execute(w, v)
-			if err != nil {
-				w.Header().Add("Content-Type", "text/html")
-				fmt.Fprintln(w, errorTemplate)
-			}
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error": true}))
 			return
 		}
 	}

@@ -3,7 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {{#vehicle}}
-            <title>VIN Decoded for: {{VIN}} ({{Type}})</title>
+            <title>VIN Decoded for: {{VIN}} {{^error}}({{/error}}{{Type}}{{^error}}){{/error}}</title>
         {{/vehicle}}
         {{^vehicle}}
             <title>VIN Decoder</title>
@@ -14,7 +14,7 @@
     <body>
         <header>
             {{#vehicle}}
-                <h1>VIN Decoded for: {{VIN}} ({{Type}})</h1>
+                <h1>VIN Decoded for: {{VIN}} {{^error}}({{/error}}{{Type}}{{^error}}){{/error}}</h1>
             {{/vehicle}}
             {{^vehicle}}
                 <h1>VIN Decoder</h1>

@@ -182,6 +182,11 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 	details := VehicleDetails{}
 	// lower(HTTP_X_REQUEST_WITH) == "xmlhttprequest"
 
+	if len(vin) != 17 {
+		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error_vin": true}))
+		return
+	}
+	
 	re, err := regexp.Compile(`(\d)([A-Z]{2})(\d)([A-Z]{2})([A-Z0-9])([1-6A-K])([0-9X])(.)([A-Z])(.*)`)
 	if err == nil {
 		matches := re.FindStringSubmatch(vin)
@@ -221,7 +226,7 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 			details.Serial    = matches[10]
 		} else {
 			vtype = ""
-			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error": true}))
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error_general": true}))
 			return
 		}
 	}

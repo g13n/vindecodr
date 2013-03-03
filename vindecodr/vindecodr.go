@@ -2,7 +2,6 @@ package vindecodr
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"path"
@@ -29,6 +28,9 @@ func getTemplatePath(template string) string {
 type Vehicle struct {
 	VIN      string
 	Type     string
+}
+
+type VehicleDetails struct {
 	Location string
 	Make     string
 	Weight   string
@@ -174,9 +176,10 @@ var YearMap = map[string]int {
 }
 
 func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
-	vin   := r.FormValue("vin")
-	vtype := r.FormValue("type")
-	v := Vehicle{VIN: vin, Type: vtype}
+	vin     := r.FormValue("vin")
+	vtype   := r.FormValue("type")
+	vehicle := Vehicle{VIN: vin, Type: vtype}
+	details := VehicleDetails{}
 	// lower(HTTP_X_REQUEST_WITH) == "xmlhttprequest"
 
 	re, err := regexp.Compile(`(\d)([A-Z]{2})(\d)([A-Z]{2})([A-Z0-9])([1-6A-K])([0-9X])(.)([ABCDEK])(.*)`)
@@ -184,145 +187,43 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 		matches := re.FindStringSubmatch(vin)
 		if matches != nil {
 			if loc, ok := LocationMap[matches[1]]; ok {
-				v.Location = loc
+				details.Location = loc
 			}
 			if mk, ok := MakeMap[matches[2]]; ok {
-				v.Make = mk
+				details.Make = mk
 			}
 			if wt, ok := WeightMap[matches[3]]; ok {
-				v.Weight = wt
+				details.Weight = wt
 			}
 			if mod, ok := ModelMap[matches[4]]; ok {
-				v.Model = mod
+				details.Model = mod
 			}
 			if eng, ok := EngineMap[matches[5]]; ok {
-				v.Engine = eng
+				details.Engine = eng
 			}
 			if intro, ok := IntroMap[matches[6]]; ok {
-				v.Intro = intro
+				details.Intro = intro
 			}
 			if chk, ok := VinCheckMap[matches[7]]; ok {
-				v.Check = chk
+				details.Check = chk
 			}
-			v.Year, err = strconv.Atoi(matches[8])
+			details.Year, err = strconv.Atoi(matches[8])
 			if err != nil {
 				if year, ok := YearMap[matches[8]]; ok {
-					v.Year = year
+					details.Year = year
 				}
 			} else {
-				v.Year += 2000
+				details.Year += 2000
 			}
 			if city, ok := MfgMap[matches[9]]; ok {
-				v.City = city
+				details.City = city
 			}
-			v.Serial    = matches[10]
+			details.Serial    = matches[10]
 		} else {
 			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error": true}))
 			return
 		}
 	}
 	
-	err = outputTemplate.Execute(w, v)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": details}))
 }
-
-var outputTemplate = template.Must(template.New("output").Parse(outputHTML))
-
-const outputHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VIN Decoded for: {{.VIN}} ({{.Type}})</title>
-<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" media="screen" />
-<link rel="stylesheet" type="text/css" href="/css/main.css" media="screen" />
-</head>
-<body>
-<header>
-<h1>VIN Decoded for: {{.VIN}} ({{.Type}})</h1>
-</header>
-
-<form action="/decoder" class="form-horizontal" method="get">
-<fieldset>
-<legend>Enter VIN number and select the vehicle type</legend>
-<div class="control-group">
-<label class="control-label" for="vin">VIN Number:</label>
-<div class="controls">
-<input id="vin" name="vin" type="text" value="{{.VIN}}" required>
-</div>
-</div>
-<div class="control-group">
-<label class="control-label" for="type">Vehicle:</label>
-<div class="controls">
-<select id="type" name="type">
-<optgroup label="Motorcycle">
-<option>Harley Davidson</option>
-</optgroup>
-</select>
-</div>
-</div>
-<div class="form-actions">
-<button class="btn-primary" type="submit">Decode</button>
-</div>
-</fieldset>
-</form>
-
-<dl class="dl-horizontal">
-<dt>Location</dt>
-<dd>{{.Location}}</dd>
-<dt>Make</dt>
-<dd>{{.Make}}</dd>
-<dt>Weight</dt>
-<dd>{{.Weight}}</dd>
-<dt>Model</dt>
-<dd>{{.Model}}</dd>
-<dt>Engine</dt>
-<dd>{{.Engine}}</dd>
-<dt>Special</dt>
-<dd>{{.Intro}}</dd>
-<dt>Special</dt>
-<dd>{{.Check}}</dd>
-<dt>Manufactured</dt>
-<dd>{{.Year}}</dd>
-<dt>Assembled</dt>
-<dd>{{.City}}</dd>
-<dt>Serial Number</dt>
-<dd>{{.Serial}}</dd>
-</dl>
-
-<footer>
-<p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
-<p class="muted text-center">Disclaimer: Use at your own risk.  However, no information is stored except for logging.</p>
-</footer>
-</body>
-</html>
-`
-
-var errorTemplate = template.Must(template.New("output").Parse(errorHTML))
-
-const errorHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VIN for: {{.VIN}} ({{.Type}})</title>
-<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" media="screen" />
-<link rel="stylesheet" type="text/css" href="/css/main.css" media="screen" />
-</head>
-<body>
-<header>
-<h1>VIN for: {{.VIN}} ({{.Type}})</h1>
-</header>
-
-<p class="lead">
-I'm unable to decode the VIN number provided. If you think the VIN is valid, please
-<a href="https://github.com/g13n/vindecodr/issues" rel="nofollow">submit a bug report here</a>.
-</p>
-
-<footer>
-<p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
-<p class="muted text-center">Disclaimer: Use at your own risk.  However, no information is stored except for logging.</p>
-</footer>
-</body>
-</html>
-`

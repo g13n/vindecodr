@@ -1,0 +1,24 @@
+<form action="/decoder" class="form-horizontal" method="get">
+<fieldset>
+    <legend>Enter VIN number and select the vehicle type</legend>
+    <div class="control-group">
+        <label class="control-label" for="vin">VIN Number:</label>
+        <div class="controls">
+            <input id="vin" name="vin" type="text" {{#vehicle}}value="{{VIN}}"{{/vehicle}} required>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="type">Vehicle:</label>
+        <div class="controls">
+            <select id="type" name="type">
+                <optgroup label="Motorcycle">
+                    <option>Harley Davidson</option>
+                </optgroup>
+            </select>
+        </div>
+    </div>
+    <div class="form-actions">
+        <button class="btn-large btn-primary" type="submit">Decode</button>
+    </div>
+</fieldset>
+</form>

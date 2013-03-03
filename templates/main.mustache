@@ -12,29 +12,33 @@
         <link rel="stylesheet" type="text/css" href="/css/main.css" media="screen" />
     </head>
     <body>
-        <header>
-            {{#vehicle}}
-                <h1>VIN Decoded for: {{VIN}} {{^error}}({{/error}}{{Type}}{{^error}}){{/error}}</h1>
-            {{/vehicle}}
-            {{^vehicle}}
+        <div id="doc">
+            <header>
+                {{#vehicle}}
+                    <h1>VIN Decoded for: {{VIN}} {{^error}}({{/error}}{{Type}}{{^error}}){{/error}}</h1>
+                {{/vehicle}}
+                {{^vehicle}}
                 <h1>VIN Decoder</h1>
-            {{/vehicle}}
-        </header>
+                {{/vehicle}}
+            </header>
 
-        {{#error}}
-        <p class="lead">
-            I'm unable to decode the VIN number provided. If you think the VIN is valid, please
-            <a href="https://github.com/g13n/vindecodr/issues" rel="nofollow">submit a bug report here</a>.
-        </p>
-        {{/error}}
+            {{#error}}
+                <p class="lead">
+                    I'm unable to decode the VIN number provided. If you think the VIN is valid, please
+                    <a href="https://github.com/g13n/vindecodr/issues" rel="nofollow">submit a bug report here</a>.
+                </p>
+            {{/error}}
 
-        {{> form}}
+            {{> form}}
 
-        {{> vehicle}}
+            {{> vehicle}}
 
-        <footer>
-            <p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
-            <p class="muted text-center">Disclaimer: Use at your own risk. However, no information is stored except for logging.</p>
-        </footer>
+            <footer>
+                <p class="muted text-center">Copyright &copy; 2013 Gopalarathnam Venkatesan. All rights reserved.</p>
+                <p class="muted text-center">This service is not affiliated with Harley-Davidson Motorcycles of H-D.</p>
+                <p class="muted text-center">Disclaimer: Use at your own risk.</p>
+                <p class="text-right"><a href="https://github.com/g13n/vindecodr" target="_blank">Source Code</a></p
+            </footer>
+        </div>
     </body>
 </html>

@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
-	"strconv"
 
 	"github.com/hoisie/mustache"
 )
@@ -25,11 +23,6 @@ func getTemplatePath(template string) string {
 	return path.Join(path.Join(os.Getenv("PWD"), "templates"), template)
 }
 
-type Vehicle struct {
-	VIN      string
-	Type     string
-}
-
 type VehicleDetails struct {
 	Location string
 	Make     string
@@ -41,11 +34,6 @@ type VehicleDetails struct {
 	Year     int
 	City     string
 	Serial   string
-}
-
-var LocationMap = map[string]string {
-	"1": "Domestic",
-	"5": "International",
 }
 
 var MakeMap = map[string]string {
@@ -144,20 +132,6 @@ var IntroMap = map[string]string {
 	"K": "Regular introduction date/BRZ calibration",
 }
 
-var VinCheckMap = map[string]string {
-	"0": "Check digit",
-	"1": "Check digit",
-	"2": "Check digit",
-	"3": "Check digit",
-	"4": "Check digit",
-	"5": "Check digit",
-	"6": "Check digit",
-	"7": "Check digit",
-	"8": "Check digit",
-	"9": "Check digit",
-	"X": "Check digit",
-}
-
 var MfgMap = map[string]string {
 	"A": "Tomahawk, WI",
 	"B": "York, PA",
@@ -167,69 +141,31 @@ var MfgMap = map[string]string {
 	"K": "Kansas city",
 }
 
-var YearMap = map[string]int {
-	"A": 2010,
-	"B": 2011,
-	"C": 2012,
-	"D": 2013,
-	"E": 2014,
-}
-
 func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
-	vin     := r.FormValue("vin")
-	vtype   := r.FormValue("type")
-	vehicle := Vehicle{VIN: vin, Type: vtype}
+	vehicle := Vehicle{VIN: r.FormValue("vin"), Type: r.FormValue("type")}
 	details := VehicleDetails{}
 	// lower(HTTP_X_REQUEST_WITH) == "xmlhttprequest"
 
-	if len(vin) != 17 {
-		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error_vin": true}))
+	if len(vehicle.VIN) != 17 {
+		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: vehicle.Type}, "error_vin": true}))
 		return
 	}
-	
-	re, err := regexp.Compile(`(\d)([A-Z]{2})(\d)([A-Z]{2})([A-Z0-9])([1-6A-K])([0-9X])(.)([A-Z])(.*)`)
-	if err == nil {
-		matches := re.FindStringSubmatch(vin)
-		if matches != nil {
-			if loc, ok := LocationMap[matches[1]]; ok {
-				details.Location = loc
-			}
-			if mk, ok := MakeMap[matches[2]]; ok {
-				details.Make = mk
-			}
-			if wt, ok := WeightMap[matches[3]]; ok {
-				details.Weight = wt
-			}
-			if mod, ok := ModelMap[matches[4]]; ok {
-				details.Model = mod
-			}
-			if eng, ok := EngineMap[matches[5]]; ok {
-				details.Engine = eng
-			}
-			if intro, ok := IntroMap[matches[6]]; ok {
-				details.Intro = intro
-			}
-			if chk, ok := VinCheckMap[matches[7]]; ok {
-				details.Check = chk
-			}
-			details.Year, err = strconv.Atoi(matches[8])
-			if err != nil {
-				if year, ok := YearMap[matches[8]]; ok {
-					details.Year = year
-				}
-			} else {
-				details.Year += 2000
-			}
-			if city, ok := MfgMap[matches[9]]; ok {
-				details.City = city
-			}
-			details.Serial    = matches[10]
-		} else {
-			vtype = ""
-			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vin, Type: vtype}, "error_general": true}))
-			return
-		}
+
+	vin, err := vehicle.Parse()
+	if err != nil {
+		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error_general": true}))
+		return
 	}
-	
+
+	details.Location = WorldMfgCodeMap[vin.WorldMfgCode]
+	details.Make     = MakeMap[vin.Manufacturer]
+	details.Weight   = WeightMap[string(vin.Attributes[0])]
+	details.Model    = ModelMap[string(vin.Attributes[1:3])]
+	details.Engine   = EngineMap[string(vin.Attributes[3])]
+	details.Intro    = IntroMap[string(vin.Attributes[4])]
+	details.Year     = vin.ModelYear;
+	details.City     = MfgMap[vin.MfgPlant]
+	details.Serial   = vin.SerialNumber
+
 	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": details}))
 }

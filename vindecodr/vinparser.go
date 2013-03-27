@@ -36,10 +36,20 @@ var yearMap = map[string]int {
 	"E": 2014,
 }
 
+var CheckDigitError = errors.New("Check-digit mismatch")
+var VINError = errors.New("Invalid VIN")
+
 // Parse the given Vehicle structure and return as VIN
 func (v Vehicle) Parse() (VIN, error) {
+	var chkErr error
+
+	if len(v.VIN) != 17 {
+		return VIN{}, VINError
+	}
+
+	chkErr = nil
 	if !isValidVIN(v.VIN) {
-		return VIN{}, errors.New("Check-digit mismatch")
+		chkErr = CheckDigitError
 	}
 
 	re, err := regexp.Compile(`(\d)([A-Z]{2})([A-Z0-9]{5})(\d)([A-Z0-9])([A-Z])(\d{6})`)
@@ -65,7 +75,7 @@ func (v Vehicle) Parse() (VIN, error) {
 		}
 		v.MfgPlant     = match[6]
 		v.SerialNumber = match[7]
-		return v, nil
+		return v, chkErr
 	}
 	return VIN{}, errors.New("Match Error")
 }
@@ -136,10 +146,6 @@ var weightTable = map[int]int {
 // This logic is based on the following ``check digit'' algorithm.
 // http://en.wikipedia.org/wiki/Vehicle_Identification_Number#Check_digit_calculation
 func isValidVIN(vin string) bool {
-	if len(vin) != 17 {
-		return false
-	}
-
 	for i := 0; i < 10; i++ {
 		checkDigitMap[strconv.Itoa(i)] = i;
 	}

@@ -46,18 +46,17 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 	vehicle := Vehicle{VIN: r.FormValue("vin"), Type: r.FormValue("type")}
 	// lower(HTTP_X_REQUEST_WITH) == "xmlhttprequest"
 
-	if len(vehicle.VIN) != 17 {
-		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: vehicle.Type}, "error_vin": true}))
-		return
-	}
-
 	vin, err := vehicle.Parse()
-	if err != nil {
-		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error_general": true}))
+	if err != CheckDigitError && err != nil {
+		if err == VINError {
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_vin": true}))
+		} else {
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_general": true}))
+		}
 		return
 	}
 
 	if vehicleFunc, ok := VehicleFuncMap[vin.Manufacturer]; ok {
-		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": vehicleFunc(vin)}))
+		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": vehicleFunc(vin), "error_check": err}))
 	}
 }

@@ -16,7 +16,7 @@ func init() {
 
 func displayTemplate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/html")
-	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": false}))
+	fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("application.mustache"), map[string]interface{}{"vehicle": false}))
 }
 
 func getTemplatePath(template string) string {
@@ -27,6 +27,8 @@ type VehicleFunc func(VIN) VehicleDetails
 
 var VehicleFuncMap = map[string]VehicleFunc {
 	"HD": HarleyDavidson,
+	"AU": Audi,
+	"A1": Audi,
 }
 
 type VehicleDetails struct {
@@ -37,7 +39,7 @@ type VehicleDetails struct {
 	Engine   string
 	Intro    string
 	Check    string
-	Year     int
+	Year     string
 	City     string
 	Serial   string
 }
@@ -49,14 +51,14 @@ func decodeVINNumber(w http.ResponseWriter, r *http.Request) {
 	vin, err := vehicle.Parse()
 	if err != CheckDigitError && err != nil {
 		if err == VINError {
-			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_vin": true}))
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("application.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_vin": true}))
 		} else {
-			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_general": true}))
+			fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("application.mustache"), map[string]interface{}{"vehicle": Vehicle{VIN: vehicle.VIN, Type: ""}, "error": true, "error_general": true}))
 		}
 		return
 	}
 
 	if vehicleFunc, ok := VehicleFuncMap[vin.Manufacturer]; ok {
-		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("main.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": vehicleFunc(vin), "error_check": err}))
+		fmt.Fprintln(w, mustache.RenderFile(getTemplatePath("application.mustache"), map[string]interface{}{"vehicle": vehicle}, map[string]interface{}{"details": vehicleFunc(vin), "error_check": err}))
 	}
 }

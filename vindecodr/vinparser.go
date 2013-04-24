@@ -18,7 +18,7 @@ type VIN struct {
 	Manufacturer string	// char[2]
 	Attributes   string	// char[5]
 	CheckDigit   string	// char[1]
-	ModelYear    int
+	ModelYear    string
 	MfgPlant     string	// char[1]
 	SerialNumber string	// char[6]
 }
@@ -28,12 +28,12 @@ var WorldMfgCodeMap = map[string]string {
 	"5": "International",
 }
 
-var yearMap = map[string]int {
-	"A": 2010,
-	"B": 2011,
-	"C": 2012,
-	"D": 2013,
-	"E": 2014,
+var yearMap = map[string]string {
+	"A": "2010",
+	"B": "2011",
+	"C": "2012",
+	"D": "2013",
+	"E": "2014",
 }
 
 var CheckDigitError = errors.New("Check-digit mismatch")
@@ -68,10 +68,10 @@ func (v Vehicle) Parse() (VIN, error) {
 			if y, ok := yearMap[match[5]]; ok {
 				v.ModelYear = y
 			} else {
-				return VIN{}, errors.New("Invalid year")
+				v.ModelYear = match[5]
 			}
 		} else {
-			v.ModelYear = year + 2000
+			v.ModelYear = strconv.Itoa(year + 2000)
 		}
 		v.MfgPlant     = match[6]
 		v.SerialNumber = match[7]
@@ -85,7 +85,7 @@ func (v VIN) Stringer() string {
 
 	s = v.WorldMfgCode + ", " + v.Manufacturer + ", " +
 		v.Attributes + ", " + v.CheckDigit + ", " +
-		strconv.Itoa(v.ModelYear) + ", " + v.MfgPlant + ", " +
+		v.ModelYear + ", " + v.MfgPlant + ", " +
 		v.SerialNumber
 	return s
 }

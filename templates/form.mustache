@@ -1,6 +1,6 @@
 <form action="/decoder" class="form-horizontal" method="get">
 <fieldset>
-    <legend>Enter VIN number and select the vehicle type. At the moment this works only for Harley Davidson motorcycles.</legend>
+    <legend>Enter VIN number and select the vehicle type. At the moment this works only for Harley Davidson motorcycles{{! and Audi cars}}.</legend>
     <div class="control-group">
         <label class="control-label" for="vin">VIN Number:</label>
         <div class="controls">
@@ -11,6 +11,11 @@
         <label class="control-label" for="type">Vehicle:</label>
         <div class="controls">
             <select id="type" name="type">
+                {{!
+                <optgroup label="Cars">
+                    <option>Audi</option>
+                </optgroup>
+                }}
                 <optgroup label="Motorcycle">
                     <option>Harley Davidson</option>
                 </optgroup>

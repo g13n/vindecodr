@@ -112,7 +112,7 @@ func HarleyDavidson(vin VIN) (details VehicleDetails) {
 	details.Model    = modelMap[string(vin.Attributes[1:3])]
 	details.Engine   = engineMap[string(vin.Attributes[3])]
 	details.Intro    = introMap[string(vin.Attributes[4])]
-	details.Year     = vin.ModelYear;
+	details.Year     = vin.ModelYear
 	details.City     = mfgMap[vin.MfgPlant]
 	details.Serial   = vin.SerialNumber
 	return

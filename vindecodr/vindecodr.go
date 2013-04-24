@@ -3,8 +3,6 @@ package vindecodr
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"path"
 
 	"github.com/hoisie/mustache"
 )
@@ -20,7 +18,7 @@ func displayTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTemplatePath(template string) string {
-	return path.Join(path.Join(os.Getenv("PWD"), "templates"), template)
+	return "./templates/" + template
 }
 
 type VehicleFunc func(VIN) VehicleDetails
